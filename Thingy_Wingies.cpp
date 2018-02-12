@@ -52,6 +52,7 @@ struct Bomb {
 	double speed = 0.05;
 	double carry_distance = 0;
 	bool isDrawn = false;
+	double relative_size = 0.2;
 };
 
 // Globals & constants. I tried to name them as possible as reasonable & self-explanatory.
@@ -70,8 +71,7 @@ int CURRENT_GAME_POINTS = 0, //will be implemented
 double angle, Ix, Iy, 
 	carry_distance_dx[TOTAL_THINGY_COUNT], 
 	carry_distance_dy[TOTAL_THINGY_COUNT],
-	mouseX = DBL_MAX, mouseY = DBL_MAX,
-	relative_bomb_size = STANDARD_BOMB_SIZE;
+	mouseX = DBL_MAX, mouseY = DBL_MAX;
 
 struct Thing thingies[TOTAL_THINGY_COUNT];
 vector<Bomb> bombs;
@@ -96,6 +96,8 @@ float LO = -3.6,
 	thingy_radius_changed_for_600px = THINGY_RADIUS_DEFAULT,
 	thingy_radius_changed_for_1000px = THINGY_RADIUS_DEFAULT;
 
+//Just to print all information required to debug purposes.
+//It is called when "s" key pressed on the keyboard.
 void output_current_game_state() {
 	cout << "################"
 		<< " PRINTING DEBUG INFO NUMBER "<<
@@ -137,6 +139,7 @@ void output_current_game_state() {
 		<< " ################";
 }
 
+//Calculates current game points accordingly.
 void calculate_game_points(Thing thingy) {
 	int level = thingy.level;
 
@@ -155,9 +158,18 @@ void calculate_game_points(Thing thingy) {
 }
 
 bool is_bomb_collides(Bomb bomb,double cIx, double cIy, double R) {
-	double dx = abs(bomb.positionX - relative_bomb_size - cIx);
-	double dy = abs(bomb.positionY + bomb.carry_distance - cIy);
-	return (dx * dx + dy * dy <= R * R);
+	double pdx1 = abs(bomb.positionX - bomb.relative_size - cIx);
+	double pdy1 = abs(bomb.positionY - cIy);
+
+	double pdx2 = abs(bomb.positionX + bomb.relative_size - cIx);
+	double pdy2 = abs(bomb.positionY - cIy);
+
+	double pdx3 = abs(bomb.positionX - cIx);
+	double pdy3 = abs(bomb.positionY - bomb.relative_size - cIy);
+	
+	return (pdx1 * pdx1 + pdy1 * pdy1 <= R * R)
+		|| (pdx2 * pdx2 + pdy2 * pdy2 <= R * R)
+		|| (pdx3 * pdx2 + pdy3 * pdy3 <= R * R);
 }
 
 bool control_collision_for_all_bombs(Bomb vbomb, Thing& thingy, int thingy_number) {
@@ -490,6 +502,68 @@ void handy_thingy_movements() {
 							carry_distance_dy[i] += thingies[i].speed;
 					}
 				}
+				else if (thingies[i].dxdy[0] == -1 && thingies[i].dxdy[1] == 1) { //-1,1
+					if ((thingies[i].positionX + carry_distance_dx[i]) >= -4.0 && !negative_out_of_the_screen_dx[i])
+						carry_distance_dx[i] -= thingies[i].speed;
+					else if ((thingies[i].positionX + carry_distance_dx[i]) <= -4.0 && !negative_out_of_the_screen_dx[i]) {
+						negative_out_of_the_screen_dx[i] = true;
+						carry_distance_dx[i] += thingies[i].speed;
+					}
+					else if ((thingies[i].positionX + carry_distance_dx[i]) >= -4.0 && negative_out_of_the_screen_dx[i]) {
+						if ((carry_distance_dx[i] + thingies[i].positionX) >= 4.0) {
+							negative_out_of_the_screen_dx[i] = false;
+							positive_out_of_the_screen_dx[i] = true;
+						}
+						else
+							carry_distance_dx[i] += thingies[i].speed;
+					}
+
+					if ((thingies[i].positionY + carry_distance_dy[i]) <= 4.0 && !positive_out_of_the_screen_dy[i])
+						carry_distance_dy[i] += thingies[i].speed;
+					else if ((thingies[i].positionY + carry_distance_dy[i]) >= 4.0 && !positive_out_of_the_screen_dy[i]) {
+						positive_out_of_the_screen_dy[i] = true;
+						carry_distance_dy[i] -= thingies[i].speed;
+					}
+					else if (positive_out_of_the_screen_dy[i] && (carry_distance_dy[i] + thingies[i].positionY) <= 4.0) {
+						if ((carry_distance_dy[i] + thingies[i].positionY) <= -4.0) {
+							positive_out_of_the_screen_dy[i] = false;
+							negative_out_of_the_screen_dy[i] = true;
+						}
+						else
+							carry_distance_dy[i] -= thingies[i].speed;
+					}
+				}
+				else if (thingies[i].dxdy[0] == 1 && thingies[i].dxdy[1] == -1) { //1,-1
+					if ((thingies[i].positionX + carry_distance_dx[i]) <= 4.0 && !positive_out_of_the_screen_dx[i])
+						carry_distance_dx[i] += thingies[i].speed;
+					else if ((thingies[i].positionX + carry_distance_dx[i]) >= 4.0 && !positive_out_of_the_screen_dx[i]) {
+						positive_out_of_the_screen_dx[i] = true;
+						carry_distance_dx[i] -= thingies[i].speed;
+					}
+					else if (positive_out_of_the_screen_dx[i] && (carry_distance_dx[i] + thingies[i].positionX) <= 4.0) {
+						if ((carry_distance_dx[i] + thingies[i].positionX) <= -4.0) {
+							positive_out_of_the_screen_dx[i] = false;
+							negative_out_of_the_screen_dx[i] = true;
+						}
+						else
+							carry_distance_dx[i] -= thingies[i].speed;
+					}
+
+					if ((thingies[i].positionY + carry_distance_dy[i]) >= -4.0 && !negative_out_of_the_screen_dy[i])
+						carry_distance_dy[i] -= thingies[i].speed;
+					else if ((thingies[i].positionY + carry_distance_dy[i]) <= -4.0 && !negative_out_of_the_screen_dy[i]) {
+						negative_out_of_the_screen_dy[i] = true;
+						carry_distance_dy[i] += thingies[i].speed;
+					}
+					else if ((thingies[i].positionY + carry_distance_dy[i]) >= -4.0 && negative_out_of_the_screen_dy[i]) {
+						if ((carry_distance_dy[i] + thingies[i].positionY) >= 4.0) {
+							negative_out_of_the_screen_dy[i] = false;
+							positive_out_of_the_screen_dy[i] = true;
+						}
+						else
+							carry_distance_dy[i] += thingies[i].speed;
+					}
+				}
 			}
 		}
 	}
@@ -500,49 +574,49 @@ void handle_bomb_drawing_sequence(Bomb bomby) {
 		if (bomby.level == 0) {
 			glColor3f(1.0, 1.0, 0.0);
 			glBegin(GL_TRIANGLES);
-			glVertex2f(bomby.positionX - relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX + relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX, bomby.positionY - relative_bomb_size + bomby.carry_distance);
+			glVertex2f(bomby.positionX - bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX + bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX, bomby.positionY - bomby.relative_size + bomby.carry_distance);
 			glEnd();
 		}
 		else if (bomby.level == 1) {
 			glColor3f(0.8, 0.8, 0.0);
 			glBegin(GL_TRIANGLES);
-			glVertex2f(bomby.positionX - relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX + relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX, bomby.positionY - relative_bomb_size + bomby.carry_distance);
+			glVertex2f(bomby.positionX - bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX + bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX, bomby.positionY - bomby.relative_size + bomby.carry_distance);
 			glEnd();
 		}
 		else if (bomby.level == 2) {
 			glColor3f(0.6, 0.6, 0.0);
 			glBegin(GL_TRIANGLES);
-			glVertex2f(bomby.positionX - relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX + relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX, bomby.positionY - relative_bomb_size + bomby.carry_distance);
+			glVertex2f(bomby.positionX - bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX + bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX, bomby.positionY - bomby.relative_size + bomby.carry_distance);
 			glEnd();
 		}
 		else if (bomby.level == 3) {
 			glColor3f(0.4, 0.4, 0.0);
 			glBegin(GL_TRIANGLES);
-			glVertex2f(bomby.positionX - relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX + relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX, bomby.positionY - relative_bomb_size + bomby.carry_distance);
+			glVertex2f(bomby.positionX - bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX + bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX, bomby.positionY - bomby.relative_size + bomby.carry_distance);
 			glEnd();
 		}
 		else if (bomby.level == 4) {
 			glColor3f(0.75, 0.0, 0.8);
 			glBegin(GL_TRIANGLES);
-			glVertex2f(bomby.positionX - relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX + relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX, bomby.positionY - relative_bomb_size + bomby.carry_distance);
+			glVertex2f(bomby.positionX - bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX + bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX, bomby.positionY - bomby.relative_size + bomby.carry_distance);
 			glEnd();
 		}
 		else if (bomby.level == 5) {
 			glColor3f(0.5, 0.0, 1.0);
 			glBegin(GL_TRIANGLES);
-			glVertex2f(bomby.positionX - relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX + relative_bomb_size, bomby.positionY + bomby.carry_distance);
-			glVertex2f(bomby.positionX, bomby.positionY - relative_bomb_size + bomby.carry_distance);
+			glVertex2f(bomby.positionX - bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX + bomby.relative_size, bomby.positionY + bomby.carry_distance);
+			glVertex2f(bomby.positionX, bomby.positionY - bomby.relative_size + bomby.carry_distance);
 			glEnd();
 		}
 	}
@@ -586,12 +660,12 @@ void handle_bomb_movements_on_dy(Bomb &bomby) {
 		}
 	}
 	
-	if ((bomby.positionY + bomby.carry_distance) >= -4.0) {
-		bomby.carry_distance = bomby.carry_distance - bomby.speed;
+	if (bomby.level != 5 && bomby.level_count != 0) {
+		bomby.relative_size = bomby.relative_size - 0.005;
 		for (int thingy_number = 0; thingy_number < TOTAL_THINGY_COUNT; thingy_number++)
 			control_collision_for_all_bombs(bomby, thingies[thingy_number], thingy_number);
 	}
-	
+
 	if (bomby.level_count != 0)
 		bomby.level_count--;
 	else if(bomby.level_count == 0 && bomby.level != 5) {
@@ -674,6 +748,25 @@ void setup(void){
 	glFlush();
 }
 
+void set_bomb_relative_size_for_all_bombs(double new_size, int op) {
+	if(op == 0)
+		for (vector<Bomb>::iterator it = bombs.begin(); it != bombs.end();) {
+			Bomb &bomb = bombs.at(distance(bombs.begin(), it));
+			bomb.relative_size = new_size;
+			++it;
+		}
+	else if(op == 1)
+		for (vector<Bomb>::iterator it = bombs.begin(); it != bombs.end();) {
+			Bomb &bomb = bombs.at(distance(bombs.begin(), it));
+			bomb.relative_size = bomb.relative_size * 1.5;
+			++it;
+		}
+	for (vector<Bomb>::iterator it = bombs.begin(); it != bombs.end();) {
+		Bomb &bomb = bombs.at(distance(bombs.begin(), it));
+		++it;
+	}
+}
+
 void reshape(int w, int h){
 	width = glutGet(GLUT_WINDOW_WIDTH);
 	height = glutGet(GLUT_WINDOW_HEIGHT);
@@ -695,20 +788,20 @@ void reshape(int w, int h){
 
 	if (height < 600 && height > 300 && height < 600 && height > 300) {
 		thingy_radius = THINGY_RADIUS_DEFAULT;
-		relative_bomb_size = STANDARD_BOMB_SIZE;
+		set_bomb_relative_size_for_all_bombs(STANDARD_BOMB_SIZE, 0);
 	}
 
 	if (width > 400.0 || height > 400.0) {
 		if (!resolution_changes_adjusted_larger_than_600px && (height > 600.0 || width > 600.0)) {
 			thingy_radius_changed_for_600px = thingy_radius;
 			thingy_radius = thingy_radius * 0.7;
-			relative_bomb_size = STANDARD_BOMB_SIZE;
+			set_bomb_relative_size_for_all_bombs(STANDARD_BOMB_SIZE, 0);
 			resolution_changes_adjusted_larger_than_600px = true;
 		}
 		else if (!resolution_changes_adjusted_larger_than_1000px && (height > 1000.0 || width > 1000.0)) {
 			thingy_radius_changed_for_1000px = thingy_radius;
 			thingy_radius = thingy_radius * 0.7;
-			relative_bomb_size = STANDARD_BOMB_SIZE;
+			set_bomb_relative_size_for_all_bombs(STANDARD_BOMB_SIZE, 0);
 			resolution_changes_adjusted_larger_than_1000px = true;
 		}
 		glutPostRedisplay();
@@ -717,7 +810,7 @@ void reshape(int w, int h){
 	else if (!resolution_changes_adjusted_smaller_than_400px && (width < 300.0 || height < 300.0)) {
 		thingy_radius_changed_for_400px = thingy_radius;
 		thingy_radius = thingy_radius * 1.5;
-		relative_bomb_size = relative_bomb_size * 1.5;
+		set_bomb_relative_size_for_all_bombs(1.5, 1);
 		glutPostRedisplay();
 		glFlush();
 	}
