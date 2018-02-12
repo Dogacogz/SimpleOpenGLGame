@@ -15,10 +15,10 @@ this. About a second later, the thing disappears (meaning that it is destroyed).
 
 # Input Events:
 
-	When the 'q' key is pressed, the game is terminated.
+* When the 'q' key is pressed, the game is terminated.
 	
-	Left button down: This causes a bomb to be dropped centered at the current mouse coordinates. There is no limit on the number of bombs that the user is allowed to have active at any time.
+* Left button down: This causes a bomb to be dropped centered at the current mouse coordinates. There is no limit on the number of bombs that the user is allowed to have active at any time.
 	
-	'p': When the 'p' key is pressed, the game pauses. When 'p' is pressed a second time the game resumes.
+* 'p': When the 'p' key is pressed, the game pauses. When 'p' is pressed a second time the game resumes.
 	
-	's': When the 's' key is pressed, the game pauses if it is in a running state. (If it is already in a paused state or if the game is over, it stays in its current state.) The state of the game is advanced by one step, and then the program outputs all the game's current state to the standard output (for debugging purposes). This should include the locations of the things and the bombs and any other information that you and important. By repeatedly hitting 's' key, the program will perform consecutive single steps.
+* 's': When the 's' key is pressed, the game pauses if it is in a running state. (If it is already in a paused state or if the game is over, it stays in its current state.) The state of the game is advanced by one step, and then the program outputs all the game's current state to the standard output (for debugging purposes). This should include the locations of the things and the bombs and any other information that you and important. By repeatedly hitting 's' key, the program will perform consecutive single steps.
