@@ -1,7 +1,9 @@
 # SimpleOpenGLGame
 A simple OpenGL game in which you kill things as you drop bombs on them. The bomb and the thingy must be at the same color/level for bombs to kill things.
 
-Note that you have to click TWICE to start dropping bombs, after the first party of the bombs are exploded.
+### Note that: 
+	You have to click TWICE to start dropping bombs, after the first party of the bombs are exploded.
+	After starting single stepping & debugging with key "s", you can start the game with "p".
 
 # Game Description:
 
