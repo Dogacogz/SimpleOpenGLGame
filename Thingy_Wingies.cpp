@@ -157,6 +157,7 @@ void calculate_game_points(Thing thingy) {
 		CURRENT_GAME_POINTS += 3000;
 }
 
+//Basic calculations for a bomb--triangle-- intersects with a thingy.
 bool is_bomb_collides(Bomb bomb,double cIx, double cIy, double R) {
 	double pdx1 = abs(bomb.positionX - bomb.relative_size - cIx);
 	double pdy1 = abs(bomb.positionY - cIy);
@@ -179,7 +180,7 @@ bool control_collision_for_all_bombs(Bomb vbomb, Thing& thingy, int thingy_numbe
 	if (is_bomb_collides(vbomb, cIx, cIy, thingy_radius)) {
 		if (CONTROL_COLLISION_ACCORDING_TO_LEVEL && vbomb.level == thingy.level)
 			thingy.bombed = true;
-		else
+		else if(!CONTROL_COLLISION_ACCORDING_TO_LEVEL)
 			thingy.bombed = true;
 		return true;
 	}
@@ -187,6 +188,8 @@ bool control_collision_for_all_bombs(Bomb vbomb, Thing& thingy, int thingy_numbe
 	return false;
 }
 
+//As we create our thingies randomly, we have to randomize their
+//Values at the start of our very first game.
 void randomize_thingy_thingies(Thing& thingy) {
 	thingy.positionX = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
 	thingy.positionY = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
@@ -204,144 +207,84 @@ void randomize_thingy_thingies(Thing& thingy) {
 		thingy.dxdy[1] = -(rand() % 2);
 }
 
+//Draws a given thingy according to its positions als carried distance from its original position.
+//This function also strictly controls thingy's level & its living state.
 void handle_thingy_drawing_sequence(Thing& thingy, int thingy_number) {
-	if (active_bomb_count > 0) {
-		if (thingy.level == 4 && !thingy.bombed) {
-			glColor3f(0.75, 0.0, 0.8);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
+	if (thingy.level == 4 && !thingy.bombed) {
+		glColor3f(0.75, 0.0, 0.8);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < 10; ++i) {
+			angle = (2 * PI * i / 10);
+			Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
+			Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
+			glVertex2f(Ix, Iy);
 		}
-		else if (thingy.level == 5 && !thingy.bombed) {
-			glColor3f(0.5, 0.0, 1.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 0 && !thingy.bombed) {
-			glColor3f(1.0, 1.0, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 1 && !thingy.bombed) {
-			glColor3f(0.8, 0.8, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 2 && !thingy.bombed) {
-			glColor3f(0.6, 0.6, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 3 && !thingy.bombed) {
-			glColor3f(0.4, 0.4, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
+		glEnd();
 	}
-	else if(active_bomb_count <= 0){
-		if (thingy.level == 4 && !thingy.bombed) {
-			glColor3f(0.75, 0.0, 0.8);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
+	else if (thingy.level == 5 && !thingy.bombed) {
+		glColor3f(0.5, 0.0, 1.0);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < 10; ++i) {
+			angle = (2 * PI * i / 10);
+			Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
+			Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
+			glVertex2f(Ix, Iy);
 		}
-		else if (thingy.level == 5 && !thingy.bombed) {
-			glColor3f(0.5, 0.0, 1.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 0 && !thingy.bombed) {
-			glColor3f(1.0, 1.0, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 1 && !thingy.bombed) {
-			glColor3f(0.8, 0.8, 0.0 && !thingy.bombed);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 2 && !thingy.bombed) {
-			glColor3f(0.6, 0.6, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
-		else if (thingy.level == 3 && !thingy.bombed) {
-			glColor3f(0.4, 0.4, 0.0);
-			glBegin(GL_TRIANGLE_FAN);
-			for (int i = 0; i < 10; ++i) {
-				angle = (2 * PI * i / 10);
-				Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
-				Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
-				glVertex2f(Ix, Iy);
-			}
-			glEnd();
-		}
+		glEnd();
 	}
-	if(thingy.bombed && !thingy.destroyed_after_collision) { //implement destruction phase here.
+	else if (thingy.level == 0 && !thingy.bombed) {
+		glColor3f(1.0, 1.0, 0.0);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < 10; ++i) {
+			angle = (2 * PI * i / 10);
+			Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
+			Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
+			glVertex2f(Ix, Iy);
+		}
+		glEnd();
+	}
+	else if (thingy.level == 1 && !thingy.bombed) {
+		glColor3f(0.8, 0.8, 0.0);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < 10; ++i) {
+			angle = (2 * PI * i / 10);
+			Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
+			Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
+			glVertex2f(Ix, Iy);
+		}
+		glEnd();
+	}
+	else if (thingy.level == 2 && !thingy.bombed) {
+		glColor3f(0.6, 0.6, 0.0);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < 10; ++i) {
+			angle = (2 * PI * i / 10);
+			Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
+			Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
+			glVertex2f(Ix, Iy);
+		}
+		glEnd();
+	}
+	else if (thingy.level == 3 && !thingy.bombed) {
+		glColor3f(0.4, 0.4, 0.0);
+		glBegin(GL_TRIANGLE_FAN);
+		for (int i = 0; i < 10; ++i) {
+			angle = (2 * PI * i / 10);
+			Ix = (cos(angle) * thingy_radius) + thingy.positionX + carry_distance_dx[thingy_number];
+			Iy = (sin(angle) * thingy_radius) + thingy.positionY + carry_distance_dy[thingy_number];
+			glVertex2f(Ix, Iy);
+		}
+		glEnd();
+	}
+
+	//Our Thingies are being bombed with cruel intentions.
+	//We have to indicate whether a thing is bombed or not.
+	//Therefore, our thingies turn black after being bombed.
+	//After a collision, I set thing's counter here.
+	//It starts to countdown from a second, when the countdown is over,
+	//Things that are bombed will not be drawn anymore.
+	//Also, game points are being calculated, as the thingy dies here.
+	if(thingy.bombed && !thingy.destroyed_after_collision) {
 		if (!thingy.is_disappear_counter_started) {
 			thingy.disappear_count_start = clock();
 			thingy.is_disappear_counter_started = true;
@@ -369,7 +312,11 @@ void handle_thingy_drawing_sequence(Thing& thingy, int thingy_number) {
 	}
 }
 
-void handy_thingy_movements() {
+//If our thingies are alive, their movement is being controlled here.
+//They bounce when they hit any corner of our window.
+//Every thingy has a direction which is initialized randomly at the start.
+//The direction is controlled by dxdy array inside Thing struct.
+void handle_thingy_movements() {
 	for (int i = 0; i < TOTAL_THINGY_COUNT; i++) {
 		if (!thingies[i].bombed) {
 			if (thingies[i].dxdy[0] == 0 && thingies[i].dxdy[1] == 0)
@@ -569,6 +516,7 @@ void handy_thingy_movements() {
 	}
 }
 
+//Draws the given bomb. If the bomb is exploded, it is understood via isDrawn state.
 void handle_bomb_drawing_sequence(Bomb bomby) {
 	if (!bomby.isDrawn) {
 		if (bomby.level == 0) {
@@ -622,6 +570,10 @@ void handle_bomb_drawing_sequence(Bomb bomby) {
 	}
 }
 
+//If our bomb is exploded, it means its isDrawn state is true.
+//We just get rid of those bombs' data at the start of this func.
+//Then this function simulates the bomb dropping effect.
+//It is being simulated via changing the bomb's relative size.
 void handle_bomb_movements_on_dy(Bomb &bomby) {
 	if (bomby.level == 5 && bomby.level_count == 0) {
 		bomby.isDrawn = true;
@@ -720,6 +672,7 @@ void drawScene(void) {
 	glFlush();
 }
 
+//Initializes everything.
 void setup(void){
 	for (int i = 0; i < 6; i++)
 		thingy_count_per_level[i] = 0;
@@ -748,6 +701,8 @@ void setup(void){
 	glFlush();
 }
 
+//Sets every bomb's relative size if op == 0,
+//Multiplies every bomb's relative size if op == 1.
 void set_bomb_relative_size_for_all_bombs(double new_size, int op) {
 	if(op == 0)
 		for (vector<Bomb>::iterator it = bombs.begin(); it != bombs.end();) {
@@ -767,6 +722,9 @@ void set_bomb_relative_size_for_all_bombs(double new_size, int op) {
 	}
 }
 
+//Reshape function changes Things' radius and Bombs' size.
+//If the window gets bigger, everything scales accordingly.
+//But, it is not quite accurate.
 void reshape(int w, int h){
 	width = glutGet(GLUT_WINDOW_WIDTH);
 	height = glutGet(GLUT_WINDOW_HEIGHT);
@@ -871,7 +829,7 @@ void myMouse(int button, int state, int mx, int my) {
 void myTimeOut(int id) {
 	if (!isPaused && !single_stepped_pause && !debug_running_state_pause) {
 		if (THINGS_ARE_ALIVE)
-			handy_thingy_movements();
+			handle_thingy_movements();
 		
 		if (active_bomb_count > 0)
 			for (Bomb &bomb : bombs)
@@ -888,7 +846,7 @@ void myTimeOut(int id) {
 		if (current_single_step_count != single_stepped_n_times) {
 			single_stepped_n_times = current_single_step_count;
 			
-			handy_thingy_movements();
+			handle_thingy_movements();
 			if (active_bomb_count > 0)
 				for (Bomb &bomb : bombs)
 					handle_bomb_movements_on_dy(bomb);
@@ -900,7 +858,7 @@ void myTimeOut(int id) {
 		if (debug_current_single_step_count != debug_single_stepped_n_times) {
 			debug_single_stepped_n_times = debug_current_single_step_count;
 
-			handy_thingy_movements();
+			handle_thingy_movements();
 			if (active_bomb_count > 0)
 				for (Bomb &bomb : bombs)
 					handle_bomb_movements_on_dy(bomb);
